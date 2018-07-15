@@ -6,13 +6,20 @@ import java.awt.event.KeyEvent;
 
 import static com.races.swing.application.Constants.*;
 
-public class Player {
+public class Player extends Character {
 
-    Image image = new ImageIcon(PLAYER).getImage();
+    Image imageCenter = new ImageIcon(getResource(PLAYER)).getImage();
+    Image imageLeft = new ImageIcon(getResource(PLAYER_LEFT)).getImage();
+    Image imageRight = new ImageIcon(getResource(PLAYER_RIGHT)).getImage();
 
-    private int speed;
+    Image image = imageCenter;
+
+    int width = new ImageIcon(getResource(PLAYER)).getIconWidth();
+    int height = new ImageIcon(getResource(PLAYER)).getIconHeight();
+
+    int speed;
     private int acceleration;
-    private int mileage;
+    int mileage;
 
     int x = 30;
     int y = 300;
@@ -55,9 +62,11 @@ public class Player {
         }
         if(KeyEvent.VK_UP == key) {
             dy = 10;
+            image = imageLeft;
         }
         if(KeyEvent.VK_DOWN == key) {
             dy = -10;
+            image = imageRight;
         }
     }
 
@@ -69,6 +78,11 @@ public class Player {
         }
         if(KeyEvent.VK_UP == key || KeyEvent.VK_DOWN == key) {
             dy = 0;
+            image = imageCenter;
         }
+    }
+
+    public Rectangle getRectangle() {
+        return new Rectangle(x, y, width, height);
     }
 }

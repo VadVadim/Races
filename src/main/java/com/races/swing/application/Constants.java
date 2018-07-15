@@ -7,6 +7,9 @@ public interface Constants {
     int MAX_BOTTOM = 500;
     int MAX_LEFT = 30;
     int MAX_RIGHT = 790;
-    String ROAD = "src/main/resources/road.jpg";
-    String PLAYER = "src/main/resources/player.jpg";
+    String ROAD = "road.jpg";
+    String PLAYER = "player.jpg";
+    String PLAYER_LEFT = "player_left.jpg";
+    String PLAYER_RIGHT = "player_right.jpg";
+    String ENEMY = "enemy.jpg";
 }
