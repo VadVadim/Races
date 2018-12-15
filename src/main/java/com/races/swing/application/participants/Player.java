@@ -1,6 +1,5 @@
 package com.races.swing.application.participants;
 
-import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 
@@ -8,17 +7,17 @@ import static com.races.swing.application.Constants.*;
 
 public class Player extends Character {
 
-    Image imageCenter = new ImageIcon(getResource(PLAYER)).getImage();
-    Image imageLeft = new ImageIcon(getResource(PLAYER_LEFT)).getImage();
-    Image imageRight = new ImageIcon(getResource(PLAYER_RIGHT)).getImage();
+    Image imageCenter = getImage(PLAYER);
+    Image imageLeft = getImage(PLAYER_LEFT);
+    Image imageRight = getImage(PLAYER_RIGHT);
 
     Image image = imageCenter;
 
-    int width = new ImageIcon(getResource(PLAYER)).getIconWidth();
-    int height = new ImageIcon(getResource(PLAYER)).getIconHeight();
+    int width = getWidth(PLAYER);
+    int height = getHeight(PLAYER);
 
     int speed;
-    private int acceleration;
+    int acceleration;
     int mileage;
 
     int x = 30;

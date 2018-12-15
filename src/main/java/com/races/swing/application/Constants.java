@@ -12,4 +12,7 @@ public interface Constants {
     String PLAYER_LEFT = "player_left.jpg";
     String PLAYER_RIGHT = "player_right.jpg";
     String ENEMY = "enemy.jpg";
+    String RED_CAR = "red_car.jpg";
+    String CAPARO = "caparo_car.jpg";
+    String POLICE = "police_car.jpg";
 }

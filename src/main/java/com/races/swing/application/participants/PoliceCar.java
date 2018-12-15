@@ -4,22 +4,18 @@ import java.awt.*;
 
 import static com.races.swing.application.Constants.*;
 
-public class Enemy extends Character {
+public class PoliceCar extends Character {
 
     int x;
     int y;
     int speed;
 
-    Road road;
+    Image image = getImage(POLICE);
 
-    Image image = getImage(ENEMY);
-    Image redCarImage = getImage(RED_CAR);
-    Image caparoCarImage = getImage(CAPARO);
+    int width = getWidth(POLICE);
+    int height = getHeight(POLICE);
 
-    int width = getWidth(ENEMY);
-    int height = getHeight(ENEMY);
-
-    public Enemy(int x, int y, int speed, Road road) {
+    public PoliceCar(int x, int y, int speed, Road road) {
         this.x = x;
         this.y = y;
         this.speed = speed;
@@ -31,9 +27,10 @@ public class Enemy extends Character {
     }
 
     public void move() {
-        x = x - road.player.speed + speed;
+        if (road.player.speed < 40 && road.player.mileage > 50000) {
+            x = x - road.player.speed + speed;
+        }
         if (y <= MAX_TOP) y = MAX_TOP;
         if (y >= MAX_BOTTOM) y = MAX_BOTTOM;
     }
-
 }

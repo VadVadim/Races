@@ -3,15 +3,15 @@ package com.races.swing.application.participants;
 import com.races.swing.application.AudioThread;
 
 import javax.swing.*;
+import javax.swing.Timer;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.*;
 import java.util.List;
-import java.util.Random;
+import java.util.concurrent.TimeUnit;
 
 import static com.races.swing.application.Constants.MAX_SPEED;
 import static com.races.swing.application.Constants.ROAD;
@@ -28,11 +28,30 @@ public class Road extends JPanel implements ActionListener, Runnable {
 
     Thread audioThread = new Thread(new AudioThread());
 
+    List<PoliceCar> policemen = new ArrayList<>();
+
+    Thread policemenFactory = new Thread(() -> {
+        while (true) {
+            Random random = new Random();
+            try {
+                TimeUnit.SECONDS.sleep(4);
+                policemen.add(new PoliceCar(-2000, random.nextInt(400), random.nextInt(60), this));
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    });
+
     List<Enemy> enemies = new ArrayList<>();
+
+    int money;
+
+    Rectangle health = new Rectangle(950,8, 30, 70);
 
     public Road() {
         mainTimer.start();
         enemiesFactory.start();
+        policemenFactory.start();
         audioThread.start();
         addKeyListener(new MyKeyAdapter());
         setFocusable(true);
@@ -58,8 +77,28 @@ public class Road extends JPanel implements ActionListener, Runnable {
 
         drawSpeed(g);
         drawMileage(g);
+        drawMoney(g);
+        drawHealth(g);
 
         drawEnemies(g);
+        drawPolicemen(g);
+    }
+
+    private void drawHealth(Graphics g) {
+        Graphics2D g2D = (Graphics2D) g;
+        g2D.setColor(Color.blue);
+        g2D.fill(health);
+    }
+
+    private void drawMoney(Graphics g) {
+        g.setColor(Color.WHITE);
+        Font font = new Font("Arial", Font.ITALIC, 20);
+        g.setFont(font);
+        if (money < 0) {
+            g.drawString("Fine: " + money + " $", 40, 50);
+        } else {
+            g.drawString("Money: " + money + " $", 40, 50);
+        }
     }
 
     private void drawMileage(Graphics g) {
@@ -85,7 +124,26 @@ public class Road extends JPanel implements ActionListener, Runnable {
                 iterator.remove();
             } else {
                 enemy.move();
-                g.drawImage(enemy.image, enemy.x, enemy.y, null);
+                if (enemy.speed <= 20) {
+                    g.drawImage(enemy.image, enemy.x, enemy.y, null);
+                } else if (enemy.speed <=40) {
+                    g.drawImage(enemy.redCarImage, enemy.x, enemy.y, null);
+                } else {
+                    g.drawImage(enemy.caparoCarImage, enemy.x, enemy.y, null);
+                }
+            }
+        }
+    }
+
+    private void drawPolicemen(Graphics g) {
+        ListIterator<PoliceCar> iterator = policemen.listIterator();
+        while (iterator.hasNext()) {
+            PoliceCar policeCar = iterator.next();
+            if (policeCar.x >= 2400 || policeCar.x <= -2400) {
+                iterator.remove();
+            } else {
+                policeCar.move();
+                g.drawImage(policeCar.image, policeCar.x, policeCar.y, null);
             }
         }
     }
@@ -93,14 +151,57 @@ public class Road extends JPanel implements ActionListener, Runnable {
     public void actionPerformed(ActionEvent e) {
         player.move();
         repaint();
+        improveHealth();
         testСollisionWithEnemies();
+        testСollisionWithPolicemen();
         testWin();
+        increaseMoney();
+    }
+
+    private void increaseMoney() {
+        Iterator<Enemy> iterator = enemies.iterator();
+        while (iterator.hasNext()) {
+            Enemy enemy = iterator.next();
+            if (Math.abs(player.getRectangle().getCenterX() - enemy.getRectangle().getCenterX()) < 150
+                  && Math.abs(player.getRectangle().getCenterY()
+                    - enemy.getRectangle().getCenterY()) < 150
+                    && player.speed >=25
+                    && player.acceleration > 0
+                    && !player.getRectangle().intersects(enemy.getRectangle())) {
+                money += 10;
+            }
+        }
+    }
+
+    private void improveHealth() {
+        double healthHeight = health.getHeight();
+        int y = (int) health.getY();
+        if (money >= 200 && healthHeight < 70) {
+            healthHeight += 10;
+            y-=10;
+            health.setLocation((int) health.getX(), y);
+            health.setSize(health.width, (int) healthHeight);
+            money -= 200;
+        }
+        if (health.getHeight() >=70) {
+            health = new Rectangle(950,8, 30, 70);
+        }
     }
 
     private void testWin() {
-        if (player.mileage > 200000) {
+        if (player.mileage > 300000) {
             JOptionPane.showMessageDialog(null, "You won!!!");
             System.exit(0);
+        }
+    }
+
+    private void testСollisionWithPolicemen() {
+        Iterator<PoliceCar> iterator = policemen.iterator();
+        while (iterator.hasNext()) {
+            PoliceCar policeCar = iterator.next();
+            if (player.getRectangle().intersects(policeCar.getRectangle())) {
+                money -=1;
+            }
         }
     }
 
@@ -109,8 +210,16 @@ public class Road extends JPanel implements ActionListener, Runnable {
         while (iterator.hasNext()) {
             Enemy enemy = iterator.next();
             if (player.getRectangle().intersects(enemy.getRectangle())) {
-                JOptionPane.showMessageDialog(null, "You lose!!!");
-                System.exit(1);
+                double healthHeight = health.getHeight();
+                int y = (int) health.getY();
+                healthHeight -= 1;
+                y+=1;
+                health.setLocation((int) health.getX(), y);
+                health.setSize(health.width, (int) healthHeight);
+                if (health.getHeight() ==0) {
+                    JOptionPane.showMessageDialog(null, "You lose!!!");
+                    System.exit(1);
+                }
             }
         }
     }
@@ -119,7 +228,7 @@ public class Road extends JPanel implements ActionListener, Runnable {
         while (true) {
             Random random = new Random();
             try {
-                Thread.sleep(random.nextInt(2000));
+                TimeUnit.SECONDS.sleep(2);
                 enemies.add(new Enemy(1200, random.nextInt(600), random.nextInt(60), this));
             } catch (InterruptedException e) {
                 e.printStackTrace();
